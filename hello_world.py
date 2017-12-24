@@ -13,13 +13,14 @@ from fitting.util import write_simple_obj, safe_mkdir
 def generate_pose_data():    
     # Load FLAME model (here we load the female model)
     # Make sure path is correct
-    model_path = './models/female_model.pkl'
+    model_path = './models/generic_model.pkl'
     model = load_model( model_path )           # the loaded model object is a 'chumpy' object, check https://github.com/mattloper/chumpy for details
     print "loaded model from:", model_path
 
     # Assign random pose and shape parameters
     model.pose[:]  = np.random.randn( model.pose.size ) * 0.0
-    model.betas[:] = np.random.randn( model.betas.size ) * 1.0
+    model.pose[6] = 0.05
+    model.betas[:] = np.random.randn( model.betas.size ) * 0.0
     # model.trans[:] = np.random.randn( model.trans.size ) * 0.01   # you may also manipulate the translation of mesh
 
     outmesh_dir = './output'
@@ -28,12 +29,14 @@ def generate_pose_data():
     # Save zero pose
     outmesh_path = join( outmesh_dir, 'pose_0.obj' )
     write_simple_obj( mesh_v=model.r, mesh_f=model.f, filepath=outmesh_path )
+    np.savetxt('./output/beta.txt', model.betas.r, fmt='%.6f')
+    np.savetxt('./output/pose_0.txt', model.pose.r, fmt='%.6f')
 
     # Write to an .obj file
     model.pose[3:6] = np.random.randn(3) * 0.3
     outmesh_path = join( outmesh_dir, 'pose_t.obj' )
     write_simple_obj( mesh_v=model.r, mesh_f=model.f, filepath=outmesh_path )
-    np.savetxt('./output/pose_t.txt', model.pose.r)
+    np.savetxt('./output/pose_t.txt', model.pose.r, fmt='%.6f')
 
 
 
