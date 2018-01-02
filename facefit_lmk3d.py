@@ -109,7 +109,7 @@ def fit_lmk3d( lmk_3d,                      # input landmark 3d
 
 # -----------------------------------------------------------------------------
 
-def run_fitting():
+def run_fitting_demo():
 
     # input landmarks
     lmk_path = './data/landmark_3d.pkl'
@@ -160,7 +160,117 @@ def run_fitting():
 
 # -----------------------------------------------------------------------------
 
-if __name__ == '__main__':
+def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir):
+    # input landmarks#
+    lmk_3d = []
+    fin = open(lmk_3d_file, 'r')
+    data = fin.read()
+    rows = data.split('\n')
+    for row in rows:
+        split_row = row.split(' ')
+        if len(split_row) != 3:
+            continue
+        for i in range(3):
+            split_row[i] = float(split_row[i])
+        lmk_3d.append(split_row[0:3])
+    fin.close()
+    #print lmk_3d
+    lmk_3d = np.array(lmk_3d)
 
-    run_fitting()
+    # model
+    model_path = './models/male_model.pkl' # change to 'female_model.pkl' or 'generic_model.pkl', if needed
+    model = load_model( model_path )       # the loaded model object is a 'chumpy' object, check https://github.com/mattloper/chumpy for details
+    print "loaded model from:", model_path
+    #print model.J
+    #print model.weights
+
+
+    # landmark embedding
+    lmk_face_idx = []
+    fin = open(lmk_fid_file, 'r')
+    data = fin.read()
+    rows = data.split('\n')
+    for row in rows:
+        if row == '':
+            continue
+        lmk_face_idx.append(int(row))
+    fin.close()
+    lmk_face_idx = np.array(lmk_face_idx)
+
+    lmk_b_coords = []
+    fin = open(lmk_bary_file, 'r')
+    data = fin.read()
+    rows = data.split('\n')
+    for row in rows:
+        split_row = row.split(' ')
+        if len(split_row) != 3:
+            continue
+        for i in range(3):
+            split_row[i] = float(split_row[i])
+        lmk_b_coords.append(split_row[0:3])
+    fin.close()
+    lmk_b_coords = np.array(lmk_b_coords)
+
+    # output
+    #output_dir = './output'
+    safe_mkdir( output_dir )
+
+    # weights
+    weights = {}
+    weights['lmk']   = 1.0
+    weights['shape'] = 0.001
+    weights['expr']  = 0.001
+    weights['pose']  = 0.1
+    
+    # optimization options
+    import scipy.sparse as sp
+    opt_options = {}
+    opt_options['disp']    = 1
+    opt_options['delta_0'] = 0.1
+    opt_options['e_3']     = 1e-4
+    opt_options['maxiter'] = 100
+    sparse_solver = lambda A, x: sp.linalg.cg(A, x, maxiter=opt_options['maxiter'])[0]
+    opt_options['sparse_solver'] = sparse_solver
+
+    # run fitting
+    mesh_v, mesh_f, parms = fit_lmk3d( lmk_3d=lmk_3d,                                         # input landmark 3d
+                                       model=model,                                           # model
+                                       lmk_face_idx=lmk_face_idx, lmk_b_coords=lmk_b_coords,  # landmark embedding
+                                       weights=weights,                                       # weights for the objectives
+                                       shape_num=300, expr_num=100, opt_options=opt_options ) # options
+
+    # write result
+    output_path = join( output_dir, 'fit_lmk3d_result.obj' )
+    write_simple_obj( mesh_v=mesh_v, mesh_f=mesh_f, filepath=output_path, verbose=False )
+
+    print model.J
+    j_num = len(model.J)
+    fout = open(output_dir + '/vector_joints.txt', 'w')
+    fout.write(str(j_num) + '\n')
+    for i in range(j_num):
+        for p in range(0, len(model.J[i])):
+            string = str(model.J[i][p])
+            string = string.replace('[', '')
+            string = string.replace(']', '') + ' '
+            fout.write(string)
+        fout.write('\n')
+    fout.close()
+
+    #print model.weights
+    v_num = len(model.weights)
+    fout = open(output_dir + '/vector_weights.txt', 'w')
+    fout.write(str(v_num) + '\n')
+    for i in range(v_num):
+       fout.write(str(len(model.weights[i])) + '\n')
+       for p in range(0, len(model.weights[i])):
+           string = str(model.weights[i][p])
+           string = string.replace('[', '')
+           string = string.replace(']', '') + '\n'
+           fout.write(string)
+       fout.write('\n')
+    fout.close()
+
+if __name__ == '__main__':
+    workdir = R'D:\Yilong\GitCode\IGUtils\vsproj\Tests\TestMultiSourceCapture\test\python_flame'
+    run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir)
 
