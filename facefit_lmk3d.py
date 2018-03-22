@@ -275,6 +275,6 @@ def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir):
     np.savetxt(output_dir + '/pose.txt', model.pose.r, fmt='%.6f')
 
 if __name__ == '__main__':
-    workdir = R'D:\Yilong\GitCode\IGUtils\vsproj\Tests\TestMultiSourceCapture\test\python_flame'
-    run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir + '\\result')
+    workdir = R'D:\WorkingItems\neckcap\0206\flame\result\python_flame'
+    run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir + '\\fitted')
 
