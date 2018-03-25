@@ -69,5 +69,5 @@ def write_simple_obj( mesh_v, mesh_f, filepath, verbose=False ):
 
 def safe_mkdir( file_dir ):
     if not os.path.exists( file_dir ):
-        os.mkdir( file_dir ) 
+        os.makedirs( file_dir ) 
 

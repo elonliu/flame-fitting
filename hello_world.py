@@ -41,7 +41,7 @@ def generate_pose_data():
     # Print message
     print 'output mesh saved to: ', outmesh_path 
 
-def hello_world():
+def hello_world(save_mesh = False):
     # Load FLAME model (here we load the female model)
     # Make sure path is correct
     model_path = './models/female_model.pkl'
@@ -61,24 +61,25 @@ def hello_world():
     print ""
 
     # -----------------------------------------------------------------------------
+    if (save_mesh):
+        # Assign random pose and shape parameters
+        model.pose[:]  = np.random.randn( model.pose.size ) * 0.05
+        model.pose[3:6] = np.random.randn(3) * 0.5
+        model.betas[:] = np.random.randn( model.betas.size ) * 1.0
+        # model.trans[:] = np.random.randn( model.trans.size ) * 0.01   # you may also manipulate the translation of mesh
 
-    # Assign random pose and shape parameters
-    model.pose[:]  = np.random.randn( model.pose.size ) * 0.05
-    model.pose[3:6] = np.random.randn(3) * 0.5
-    model.betas[:] = np.random.randn( model.betas.size ) * 1.0
-    # model.trans[:] = np.random.randn( model.trans.size ) * 0.01   # you may also manipulate the translation of mesh
+        # Write to an .obj file
+        outmesh_dir = './output'
+        safe_mkdir( outmesh_dir )
+        outmesh_path = join( outmesh_dir, 'hello_flame.obj' )
+        write_simple_obj( mesh_v=model.r, mesh_f=model.f, filepath=outmesh_path )
 
-    # Write to an .obj file
-    outmesh_dir = './output'
-    safe_mkdir( outmesh_dir )
-    outmesh_path = join( outmesh_dir, 'hello_flame.obj' )
-    write_simple_obj( mesh_v=model.r, mesh_f=model.f, filepath=outmesh_path )
-
-    # Print message
-    print 'output mesh saved to: ', outmesh_path 
+        # Print message
+        print 'output mesh saved to: ', outmesh_path 
 
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    generate_pose_sequence(R'D:\WorkingItems\neckbuild\dataset\flame_synth\pose_data')
+    #generate_pose_data()
+    hello_world()
