@@ -17,7 +17,8 @@ def fit_lmk3d( lmk_3d,                      # input landmark 3d
                model,                       # model
                lmk_face_idx, lmk_b_coords,  # landmark embedding
                weights,                     # weights for the objectives
-               shape_num=300, expr_num=100, opt_options=None ):
+               shape_num=300, expr_num=100, opt_options=None ,
+               fix_exp = False):
     """ function: fit FLAME model to 3d landmarks
 
     input: 
@@ -39,6 +40,9 @@ def fit_lmk3d( lmk_3d,                      # input landmark 3d
     shape_idx      = np.arange( 0, min(300,shape_num) )        # valid shape component range in "betas": 0-299
     expr_idx       = np.arange( 300, 300+min(100,expr_num) )   # valid expression component range in "betas": 300-399
     used_idx       = np.union1d( shape_idx, expr_idx )
+    if (fix_exp):
+        used_idx = shape_idx
+
     model.betas[:] = np.random.rand( model.betas.size ) * 0.0  # initialized to zero
     model.pose[:]  = np.random.rand( model.pose.size ) * 0.0   # initialized to zero
     free_variables = [ model.trans, model.pose, model.betas[used_idx] ] 
@@ -160,7 +164,7 @@ def run_fitting_demo():
 
 # -----------------------------------------------------------------------------
 
-def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir):
+def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir, fix_exp):
     # input landmarks#
     lmk_3d = []
     fin = open(lmk_3d_file, 'r')
@@ -233,11 +237,11 @@ def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir):
     opt_options['sparse_solver'] = sparse_solver
 
     # run fitting
-    mesh_v, mesh_f, parms = fit_lmk3d( lmk_3d=lmk_3d,                                         # input landmark 3d
-                                       model=model,                                           # model
-                                       lmk_face_idx=lmk_face_idx, lmk_b_coords=lmk_b_coords,  # landmark embedding
-                                       weights=weights,                                       # weights for the objectives
-                                       shape_num=300, expr_num=100, opt_options=opt_options ) # options
+    mesh_v, mesh_f, parms = fit_lmk3d( lmk_3d=lmk_3d, # input landmark 3d
+                                       model=model, # model
+                                       lmk_face_idx=lmk_face_idx, lmk_b_coords=lmk_b_coords, # landmark embedding
+                                       weights=weights, # weights for the objectives
+                                       shape_num=300, expr_num=100, opt_options=opt_options, fix_exp=fix_exp ) # options
 
     # write result
     output_path = join( output_dir, 'fit_lmk3d_result.obj' )
@@ -275,6 +279,6 @@ def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir):
     np.savetxt(output_dir + '/pose.txt', model.pose.r, fmt='%.6f')
 
 if __name__ == '__main__':
-    workdir = R'D:\WorkingItems\neckcap\0206\flame\result\python_flame'
-    run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir + '\\fitted')
+    workdir = R'D:\WorkingItems\neckcap\1208\flame\result\python_flame_exp0'
+    run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir + '\\fitted', fix_exp = True)
 
