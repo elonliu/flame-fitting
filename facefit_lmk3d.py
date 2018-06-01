@@ -6,6 +6,7 @@ Tianye Li <tianye.li@tuebingen.mpg.de>
 import numpy as np
 import chumpy as ch
 from os.path import join
+import sys
 
 from smpl_webuser.serialization import load_model
 from fitting.landmarks import load_embedding, landmark_error_3d
@@ -279,6 +280,7 @@ def run_fitting(lmk_fid_file, lmk_bary_file, lmk_3d_file, output_dir, fix_exp):
     np.savetxt(output_dir + '/pose.txt', model.pose.r, fmt='%.6f')
 
 if __name__ == '__main__':
-    workdir = R'D:\WorkingItems\neckcap\1208\flame\result\python_flame_exp0'
+    #workdir = R'Z:\neckcap\0515a\flame\result\python_flame'
+    workdir = sys.argv[1]
     run_fitting(workdir + '\\lmk_face_idx.txt', workdir + '\\lmk_b_coords.txt', workdir + '\\landmark_3d.txt', workdir + '\\fitted', fix_exp = True)
 
